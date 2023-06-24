@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,4 +50,10 @@ public class Karyawan {
 
     @OneToMany(mappedBy = "karyawan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Rekening> rekenings;
+    
+    @PrePersist
+    protected void setCreatedDate() {
+        this.createdDate = LocalDateTime.now();
+    }
+    
 }
