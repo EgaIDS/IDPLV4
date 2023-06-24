@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import IDS.IDPLV4.DTO.KaryawanListData;
 import IDS.IDPLV4.Entity.DetailKaryawan;
 import IDS.IDPLV4.Entity.Karyawan;
 import IDS.IDPLV4.Repository.KaryawanRepo;
@@ -52,12 +53,24 @@ public class KaryawanService {
         return ApiResponse.success(updatedKaryawan);
     }
 	
-	public ApiResponse<List<Karyawan>> getKaryawanList(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+	public ApiResponse<KaryawanListData> getAllKaryawan(Pageable pageable) {
         Page<Karyawan> karyawanPage = karyawanRepository.findAll(pageable);
         List<Karyawan> karyawanList = karyawanPage.getContent();
 
-        return ApiResponse.success(karyawanList);
+        KaryawanListData karyawanListData = new KaryawanListData();
+        karyawanListData.setContent(karyawanList);
+        karyawanListData.setPageable(karyawanPage.getPageable());
+        karyawanListData.setLast(karyawanPage.isLast());
+        karyawanListData.setTotalElements(karyawanPage.getTotalElements());
+        karyawanListData.setTotalPages(karyawanPage.getTotalPages());
+        karyawanListData.setSize(karyawanPage.getSize());
+        karyawanListData.setNumber(karyawanPage.getNumber());
+        karyawanListData.setSort(karyawanPage.getSort());
+        karyawanListData.setFirst(karyawanPage.isFirst());
+        karyawanListData.setNumberOfElements(karyawanPage.getNumberOfElements());
+        karyawanListData.setEmpty(karyawanPage.isEmpty());
+
+        return ApiResponse.success(karyawanListData);
     }
 	
 	public ApiResponse<Karyawan> getKaryawanById(Long id) {

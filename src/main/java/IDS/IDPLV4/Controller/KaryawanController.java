@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import IDS.IDPLV4.Service.KaryawanService;
 import IDS.IDPLV4.Utility.ApiResponse;
 import IDS.IDPLV4.Utility.Validator;
+import IDS.IDPLV4.DTO.KaryawanListData;
 import IDS.IDPLV4.Entity.Karyawan;
 
 @RestController
@@ -46,10 +49,11 @@ public class KaryawanController {
 	}
 	
 	@GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<Karyawan>>> getKaryawanList(
+    public ResponseEntity<ApiResponse<KaryawanListData>> getKaryawanList(
             @RequestParam int page,
             @RequestParam int size) {
-        ApiResponse<List<Karyawan>> response = karyawanService.getKaryawanList(page, size);
+		Pageable pageable = PageRequest.of(page, size);
+        ApiResponse<KaryawanListData> response = karyawanService.getAllKaryawan(pageable);
         return ResponseEntity.ok(response);
     }
 	
