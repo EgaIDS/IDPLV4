@@ -1,6 +1,5 @@
 package IDS.IDPLV4.Controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,30 +17,35 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import IDS.IDPLV4.Service.KaryawanService;
+import IDS.IDPLV4.DTO.PageableListData;
+import IDS.IDPLV4.DTO.RekeningDTO;
+import IDS.IDPLV4.Entity.Karyawan;
+import IDS.IDPLV4.Entity.Rekening;
+import IDS.IDPLV4.Service.RekeningService;
 import IDS.IDPLV4.Utility.ApiResponse;
 import IDS.IDPLV4.Utility.Validator;
-import IDS.IDPLV4.DTO.KaryawanDTO;
-import IDS.IDPLV4.DTO.PageableListData;
-import IDS.IDPLV4.Entity.Karyawan;
 
 @RestController
-@RequestMapping("/v1/idstar/karyawan")
-public class KaryawanController {
-
+@RequestMapping("/v1/idstar/rekening")
+public class RekeningController {
+	
 	@Autowired
-	private KaryawanService karyawanService;
-
+	private RekeningService rekeningService;
+	
+	
 	@PostMapping("/save")
-	public ResponseEntity<ApiResponse<Karyawan>> saveKaryawan(@RequestBody Karyawan karyawan) {
-		Karyawan savedKaryawan = karyawanService.saveKaryawan(karyawan);
-		ApiResponse<Karyawan> response = new ApiResponse<>(200, savedKaryawan, "sukses");
-		return ResponseEntity.ok(response);
+	public ResponseEntity<ApiResponse<Map<String, Object>>> saveRekening(@RequestBody Rekening rekening){
+		ApiResponse<Map<String, Object>> response = rekeningService.saveRekening(rekening);
+		if (response.getCode() == HttpStatus.OK.value()) {
+			return ResponseEntity.ok(response);
+		} else {
+			return ResponseEntity.status(response.getCode()).body(response);
+		}
 	}
-
+	
 	@PutMapping("/update")
-	public ResponseEntity<ApiResponse<Karyawan>> updateKaryawan(@RequestBody Karyawan karyawan) {
-	    ApiResponse<Karyawan> response = karyawanService.updateKaryawan(karyawan);
+	public ResponseEntity<ApiResponse<Map<String, Object>>> updateRekening(@RequestBody Rekening rekening) {
+	    ApiResponse<Map<String, Object>> response = rekeningService.updateRekening(rekening);
 	    if (response.getCode() == HttpStatus.OK.value()) {
 	        return ResponseEntity.ok(response);
 	    } else {
@@ -50,17 +54,17 @@ public class KaryawanController {
 	}
 	
 	@GetMapping("/list")
-    public ResponseEntity<ApiResponse<PageableListData<KaryawanDTO>>> getKaryawanList(
+    public ResponseEntity<ApiResponse<PageableListData<RekeningDTO>>> getKaryawanList(
             @RequestParam int page,
             @RequestParam int size) {
 		Pageable pageable = PageRequest.of(page, size);
-        ApiResponse<PageableListData<KaryawanDTO>> response = karyawanService.getAllKaryawan(pageable);
+		ApiResponse<PageableListData<RekeningDTO>> response = rekeningService.getAllRekening(pageable);
         return ResponseEntity.ok(response);
     }
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse<KaryawanDTO>> getKaryawanById(@PathVariable("id") Long id) {
-	    ApiResponse<KaryawanDTO> response = karyawanService.getKaryawanById(id);
+	public ResponseEntity<ApiResponse<RekeningDTO>> getRekeningById(@PathVariable("id") Long id) {
+	    ApiResponse<RekeningDTO> response = rekeningService.getRekeningById(id);
 	    return ResponseEntity.ok(response);
 	}
 	
@@ -71,7 +75,7 @@ public class KaryawanController {
 	            return ResponseEntity.badRequest().body(ApiResponse.failed(HttpStatus.BAD_REQUEST, "Invalid ID"));
 	        }
 
-	        ApiResponse<String> response = karyawanService.deleteKaryawan(id);
+	        ApiResponse<String> response = rekeningService.deleteRekening(id);
 	        if (response.getCode() == HttpStatus.OK.value()) {
 	            return ResponseEntity.ok(response);
 	        } else {

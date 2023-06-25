@@ -35,4 +35,9 @@ public class Training {
 
     @OneToMany(mappedBy = "training", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KaryawanTraining> karyawanTrainingList;
+    
+    @PrePersist
+    protected void setCreatedDate() {
+        this.createdDate = LocalDateTime.now();
+    }
 }

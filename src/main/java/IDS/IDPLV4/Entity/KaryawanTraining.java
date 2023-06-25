@@ -1,6 +1,7 @@
 package IDS.IDPLV4.Entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
@@ -17,13 +18,13 @@ public class KaryawanTraining {
     private Long id;
 
     @Column(name = "created_date")
-    private LocalDate createdDate;
+    private LocalDateTime createdDate;
 
     @Column(name = "deleted_date")
-    private LocalDate deletedDate;
+    private LocalDateTime deletedDate;
 
     @Column(name = "update_date")
-    private LocalDate updateDate;
+    private LocalDateTime updateDate;
 
     @Column(name = "tanggal")
     private LocalDate tanggal;
@@ -35,4 +36,9 @@ public class KaryawanTraining {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_training")
     private Training training;
+    
+    @PrePersist
+    protected void setCreatedDate() {
+        this.createdDate = LocalDateTime.now();
+    }
 }

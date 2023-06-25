@@ -39,5 +39,10 @@ public class Rekening {
     @JoinColumn(name = "karyawan_id")
     private Karyawan karyawan;
     
+    @PrePersist
+    protected void setCreatedDate() {
+        this.createdDate = LocalDateTime.now();
+    }
+    
     
 }

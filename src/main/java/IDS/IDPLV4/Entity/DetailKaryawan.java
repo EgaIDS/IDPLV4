@@ -31,7 +31,13 @@ public class DetailKaryawan {
     @Column(name = "npwp")
     private String npwp;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "karyawan_id")
+    @OneToOne(mappedBy = "detailKaryawan", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinColumn(name = "karyawan_id")
     private Karyawan karyawan;
+    
+    @PrePersist
+    protected void setCreatedDate() {
+        this.createdDate = LocalDateTime.now();
+    }
+    
 }

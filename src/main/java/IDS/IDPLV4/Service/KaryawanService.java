@@ -3,6 +3,7 @@ package IDS.IDPLV4.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import IDS.IDPLV4.DTO.KaryawanListData;
+import IDS.IDPLV4.DTO.DetailKaryawanDTO;
+import IDS.IDPLV4.DTO.KaryawanDTO;
+import IDS.IDPLV4.DTO.PageableListData;
 import IDS.IDPLV4.Entity.DetailKaryawan;
 import IDS.IDPLV4.Entity.Karyawan;
 import IDS.IDPLV4.Repository.KaryawanRepo;
@@ -30,8 +33,8 @@ public class KaryawanService {
 	
 	public ApiResponse<Karyawan> updateKaryawan(Karyawan karyawan) {
         Optional<Karyawan> existingKaryawanOptional = karyawanRepository.findById(karyawan.getId());
-        if (!existingKaryawanOptional.isPresent()) {
-            return ApiResponse.failed(HttpStatus.NOT_FOUND, "Karyawan not found with id: " + karyawan.getId());
+        if (!existingKaryawanOptional.isPresent() || existingKaryawanOptional.get().getDeletedDate() != null) {
+            return ApiResponse.failed(HttpStatus.NOT_FOUND, "Karyawan not found with ID: " + karyawan.getId());
         }
 
         Karyawan existingKaryawan = existingKaryawanOptional.get();
@@ -53,12 +56,19 @@ public class KaryawanService {
         return ApiResponse.success(updatedKaryawan);
     }
 	
-	public ApiResponse<KaryawanListData> getAllKaryawan(Pageable pageable) {
-        Page<Karyawan> karyawanPage = karyawanRepository.findAll(pageable);
+	public ApiResponse<PageableListData<KaryawanDTO>> getAllKaryawan(Pageable pageable) {
+        Page<Karyawan> karyawanPage = karyawanRepository.findByDeletedDateIsNull(pageable);
         List<Karyawan> karyawanList = karyawanPage.getContent();
+//        for (Karyawan karyawan : karyawanList) {
+//			System.out.println(karyawan.getId());
+//			System.out.println(karyawan.getDetailKaryawan().getNik());
+//		}
+        List<KaryawanDTO> karyawanDTOList = karyawanList.stream()
+                .map(this::convertToKaryawanDTO)
+                .collect(Collectors.toList());
 
-        KaryawanListData karyawanListData = new KaryawanListData();
-        karyawanListData.setContent(karyawanList);
+        PageableListData<KaryawanDTO> karyawanListData = new PageableListData();
+        karyawanListData.setContent(karyawanDTOList);
         karyawanListData.setPageable(karyawanPage.getPageable());
         karyawanListData.setLast(karyawanPage.isLast());
         karyawanListData.setTotalElements(karyawanPage.getTotalElements());
@@ -73,31 +83,64 @@ public class KaryawanService {
         return ApiResponse.success(karyawanListData);
     }
 	
-	public ApiResponse<Karyawan> getKaryawanById(Long id) {
+	public ApiResponse<KaryawanDTO> getKaryawanById(Long id) {
 	    if (Validator.isNull(id)) {
 	        return ApiResponse.failed(HttpStatus.BAD_REQUEST, "Invalid ID");
 	    }
 
-	    Optional<Karyawan> karyawanOptional = karyawanRepository.findById(id);
+	    Optional<Karyawan> karyawanOptional = karyawanRepository.findByIdAndDeletedDateIsNull(id);
 	    if (!karyawanOptional.isPresent()) {
 	        return ApiResponse.failed(HttpStatus.NOT_FOUND, "Karyawan not found with ID: " + id);
 	    }
 
 	    Karyawan karyawan = karyawanOptional.get();
-	    return ApiResponse.success(karyawan);
+	    KaryawanDTO karyawanDTO = convertToKaryawanDTO(karyawan);
+	    return ApiResponse.success(karyawanDTO);
 	}
 	
 	public ApiResponse<String> deleteKaryawan(Long id) {
-        Optional<Karyawan> karyawanOptional = karyawanRepository.findById(id);
-        if (!karyawanOptional.isPresent()) {
-            return ApiResponse.failed(HttpStatus.NOT_FOUND, "Karyawan not found with id: " + id);
-        }
+		if (Validator.isNull(id)) {
+	        return ApiResponse.failed(HttpStatus.BAD_REQUEST, "Invalid ID");
+	    }
 
-        Karyawan karyawan = karyawanOptional.get();
-        karyawan.setDeletedDate(LocalDateTime.now());
-        karyawanRepository.save(karyawan);
+	    Optional<Karyawan> karyawanOptional = karyawanRepository.findByIdAndDeletedDateIsNull(id);
+	    if (!karyawanOptional.isPresent()) {
+	        return ApiResponse.failed(HttpStatus.NOT_FOUND, "Karyawan not found with ID: " + id);
+	    }
+
+	    Karyawan karyawan = karyawanOptional.get();
+	    karyawanRepository.softDelete(karyawan);
 
         return ApiResponse.success("Sukses");
     }
+	
+	private KaryawanDTO convertToKaryawanDTO(Karyawan karyawan) {
+	    KaryawanDTO karyawanDTO = new KaryawanDTO();
+	    karyawanDTO.setCreated_date(karyawan.getCreatedDate());
+	    karyawanDTO.setUpdated_date(karyawan.getUpdateDate());
+	    karyawanDTO.setDeleted_date(karyawan.getDeletedDate());
+	    karyawanDTO.setId(karyawan.getId());
+	    karyawanDTO.setNama(karyawan.getNama());
+	    karyawanDTO.setDob(karyawan.getDob());
+	    karyawanDTO.setStatus(karyawan.getStatus());
+	    karyawanDTO.setAlamat(karyawan.getAlamat());
+	    karyawanDTO.setDetailKaryawan(convertToDetailKaryawanDTO(karyawan.getDetailKaryawan()));
+	    
+	    
+	    return karyawanDTO;
+	}
+	
+	private DetailKaryawanDTO convertToDetailKaryawanDTO(DetailKaryawan detailKaryawan) {
+	    DetailKaryawanDTO detailKaryawanDTO = new DetailKaryawanDTO();
+	    detailKaryawanDTO.setCreated_date(detailKaryawan.getCreatedDate());
+	    detailKaryawanDTO.setUpdated_date(detailKaryawan.getUpdateDate());
+	    detailKaryawanDTO.setDeleted_date(detailKaryawan.getDeletedDate());
+	    detailKaryawanDTO.setId(detailKaryawan.getId());
+	    detailKaryawanDTO.setNik(detailKaryawan.getNik());
+	    detailKaryawanDTO.setNpwp(detailKaryawan.getNpwp());
+	    
+	    
+	    return detailKaryawanDTO;
+	}
 
 }

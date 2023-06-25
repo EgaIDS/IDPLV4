@@ -10,9 +10,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Setter@Getter
-public class KaryawanListData {
+public class PageableListData<T> {
 
-	private List<Karyawan> content;
+	private List<T> content;
     private Pageable pageable;
     private boolean last;
     private long totalElements;

@@ -42,7 +42,9 @@ public class Karyawan {
     @Column(name = "status")
     private String status;
 
-    @OneToOne(mappedBy = "karyawan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @OneToOne(mappedBy = "karyawan", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "detail_karyawan", referencedColumnName = "id")
     private DetailKaryawan detailKaryawan;
 
     @OneToMany(mappedBy = "karyawan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
